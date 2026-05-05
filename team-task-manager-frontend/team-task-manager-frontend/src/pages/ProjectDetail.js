@@ -15,27 +15,26 @@ export default function ProjectDetail() {
   const { user } = useAuth();
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
-  const [members, setMembers] = useState([]);
+  const [members, setMembers] = useState([]); // safe default
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: '', description: '', status: 'TODO', dueDate: '', assignedToId: '' });
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('ALL');
   const [search, setSearch] = useState('');
 
- const fetchAll = () => {
-  API.get(`/projects/${id}`).then(res => setProject(res.data));
+  const fetchAll = () => {
+    API.get(`/projects/${id}`).then(res => setProject(res.data));
 
-  API.get(`/projects/${id}/tasks`)
-    .then(res => setTasks(Array.isArray(res.data) ? res.data : []))
-    .catch(() => setTasks([]));
+    API.get(`/projects/${id}/tasks`)
+      .then(res => setTasks(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setTasks([]));
 
-  API.get(`/projects/${id}/members`)
-    .then(res => {
-      // 🔥 FIX (बस यही)
-      setMembers(Array.isArray(res.data) ? res.data : []);
-    })
-    .catch(() => setMembers([]));
-};
+    // ✅ FIXED (safe members)
+    API.get(`/projects/${id}/members`)
+      .then(res => setMembers(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setMembers([]));
+  };
+
   useEffect(() => { fetchAll(); }, [id]);
 
   const handleCreate = async (e) => {
@@ -131,28 +130,25 @@ export default function ProjectDetail() {
                 <option value="DONE">DONE</option>
               </select>
 
-<input
-  type="date"
-  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-  value={form.dueDate}
-  onChange={e => setForm({ ...form, dueDate: e.target.value })}
-/>
+              <input type="date"
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                value={form.dueDate}
+                onChange={e => setForm({ ...form, dueDate: e.target.value })}
+              />
 
-<select
-  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-  value={form.assignedToId}
-  onChange={e => setForm({ ...form, assignedToId: e.target.value })}
->
-  <option value="">Assign to...</option>
+              {/* ✅ ONLY THIS LINE FIXED */}
+              <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                value={form.assignedToId}
+                onChange={e => setForm({ ...form, assignedToId: e.target.value })}
+              >
+                <option value="">Assign to...</option>
 
-  {(Array.isArray(members) ? members : []).map(m => (
-    <option key={m.id} value={m.id}>
-      {m.name}
-    </option>
-  ))}
-
-</select>
+                {Array.isArray(members) && members.map(m =>
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                )}
+              </select>
             </div>
+
             <div className="flex gap-2">
               <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">Create Task</button>
               <button type="button" onClick={() => setShowForm(false)} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm">Cancel</button>
@@ -180,6 +176,7 @@ export default function ProjectDetail() {
                     {task.dueDate && <span className="text-xs text-gray-400">📅 {task.dueDate}</span>}
                   </div>
                 </div>
+
                 <div className="flex items-center gap-2 ml-4">
                   <select
                     value={task.status}
@@ -190,6 +187,7 @@ export default function ProjectDetail() {
                     <option value="IN_PROGRESS">IN PROGRESS</option>
                     <option value="DONE">DONE</option>
                   </select>
+
                   {user?.role === 'ADMIN' && (
                     <button onClick={() => handleDelete(task.id)} className="text-red-400 hover:text-red-600 text-xs">✕</button>
                   )}
