@@ -2,14 +2,14 @@ package com.taskmanager.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.ArrayList;
+
+import java.util.*;
 
 @Entity
 @Table(name = "projects")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@Builder
 public class Project {
 
     @Id
@@ -26,14 +26,15 @@ public class Project {
     private User createdBy;
 
     @ManyToMany
-@JoinTable(
-    name = "project_members",
-    joinColumns = @JoinColumn(name = "project_id"),
-    inverseJoinColumns = @JoinColumn(name = "user_id")
-)
-@Builder.Default
-private Set<User> members = new HashSet<>();
+    @JoinTable(
+        name = "project_members",
+        joinColumns = @JoinColumn(name = "project_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    @Builder.Default
+    private Set<User> members = new HashSet<>();
 
-@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-@Builder.Default
-private List<Task> tasks = new ArrayList<>();
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Task> tasks = new ArrayList<>();
+}
