@@ -3,7 +3,7 @@ import axios from 'axios';
 const API = axios.create({
   baseURL:
     process.env.REACT_APP_API_URL ||
-    'https://balanced-curiosity-production.up.railway.app/api',
+    'https://taskmanager-gx5p.onrender.com/api',
 });
 
 API.interceptors.request.use((config) => {
