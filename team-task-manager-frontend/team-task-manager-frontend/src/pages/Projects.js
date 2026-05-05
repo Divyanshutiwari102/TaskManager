@@ -22,18 +22,37 @@ export default function Projects() {
 
   useEffect(() => { fetchProjects(); }, []);
 
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    setError('');
-    try {
-      await API.post('/projects', form);
-      setForm({ name: '', description: '' });
-      setShowForm(false);
-      fetchProjects();
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to create project');
-    }
-  };
+ const handleCreate = async (e) => {
+  e.preventDefault();
+  setError('');
+
+  // ✅ validation (fix 400 error)
+  if (!form.name || form.name.trim().length < 3) {
+    setError("Project name must be at least 3 characters");
+    return;
+  }
+
+  try {
+    await API.post('/projects', {
+      name: form.name.trim(),
+      description: form.description?.trim() || ''
+    });
+
+    setForm({ name: '', description: '' });
+    setShowForm(false);
+    fetchProjects();
+
+  } catch (err) {
+    console.log("ERROR RESPONSE:", err.response);
+
+    // ✅ better error handling (fix wrong error display)
+    setError(
+      err.response?.data?.message ||
+      err.response?.data?.error ||
+      "Failed to create project"
+    );
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-50">
