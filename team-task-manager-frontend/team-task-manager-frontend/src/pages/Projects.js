@@ -22,11 +22,11 @@ export default function Projects() {
 
   useEffect(() => { fetchProjects(); }, []);
 
- const handleCreate = async (e) => {
+const handleCreate = async (e) => {
   e.preventDefault();
   setError('');
 
-  // ✅ validation (fix 400 error)
+  // ✅ frontend validation
   if (!form.name || form.name.trim().length < 3) {
     setError("Project name must be at least 3 characters");
     return;
@@ -43,14 +43,20 @@ export default function Projects() {
     fetchProjects();
 
   } catch (err) {
-    console.log("ERROR RESPONSE:", err.response);
+    console.log("ERROR RESPONSE:", err.response?.data);
 
-    // ✅ better error handling (fix wrong error display)
-    setError(
-      err.response?.data?.message ||
-      err.response?.data?.error ||
-      "Failed to create project"
-    );
+    const data = err.response?.data;
+
+    // ✅ handle Spring validation response
+    if (data?.name) {
+      setError(data.name);
+    } else {
+      setError(
+        data?.error ||
+        data?.message ||
+        "Failed to create project"
+      );
+    }
   }
 };
 
